@@ -1,11 +1,16 @@
 from tkinter import *
 import random
 from PIL import Image, ImageTk
+from utils import Card, Deck
 
-root = Tk()
-root.title("Sueca Game")
-root.geometry("800x600")
-root.configure(bg="green")
+global deck
+deck = Deck()
+
+player1 = []
+player2 = []
+player3 = []
+player4 = []
+
 
 def resize_cards(card):
     
@@ -17,91 +22,103 @@ def resize_cards(card):
 
     return our_card_image
 
+
 def shuffle():
+
     suits = ["diamonds", "hearts", "spades", "clubs"]
     values = list(range(2, 11)) + ["jack", "queen", "king", "ace"]
 
-    global deck
-    deck = []
-
     for suit in suits:
         for value in values:
-            deck.append(f'{value}_of_{suit}')
+            card = Card(suit, value)
+            deck.add_card(card)
 
-    global dealer, player
+def deal():
 
-    dealer = []
-    player = []
+    shuffle()
 
-    card = random.choice(deck)
-    deck.remove(card)
-    dealer.append(card)
+    for _ in range(10):
 
-    global dealer_image
-    dealer_image = resize_cards(f'./cards/{card}.png')
+        card = random.choice(deck.cards)
+        deck.remove_card(card)
+        player1.append(card)
 
-    dealer_label.config(image=dealer_image)
+        global player1_image
+        player1_image = resize_cards(f'./cards/{card.rank}_of_{card.suit}.png')
 
-    card = random.choice(deck)
-    deck.remove(card)
-    player.append(card)
+        player1_label.config(image=player1_image)
 
-    global player_image
-    player_image = resize_cards(f'./cards/{card}.png')
+        card = random.choice(deck.cards)
+        deck.remove_card(card)
+        player2.append(card)
 
-    player_label.config(image=player_image)
+        global player2_image
+        player2_image = resize_cards(f'./cards/{card.rank}_of_{card.suit}.png')
+
+        player2_label.config(image=player2_image)
+
+        card = random.choice(deck.cards)
+        deck.remove_card(card)
+        player3.append(card)
+
+        global player3_image
+        player3_image = resize_cards(f'./cards/{card.rank}_of_{card.suit}.png')
+
+        player3_label.config(image=player3_image)
+
+        card = random.choice(deck.cards)
+        deck.remove_card(card)
+        player4.append(card)
+
+        global player4_image
+        player4_image = resize_cards(f'./cards/{card.rank}_of_{card.suit}.png')
+
+        player4_label.config(image=player4_image)
 
 
-def deal_cards():
-    try:
-        card = random.choice(deck)
-        deck.remove(card)
-        dealer.append(card)
+root = Tk()
+root.title("Sueca Game")
+root.geometry("800x600")
+root.configure(bg="green")
 
-        global dealer_image
-        dealer_image = resize_cards(f'./cards/{card}.png')
-
-        dealer_label.config(image=dealer_image)
-
-        card = random.choice(deck)
-        deck.remove(card)
-        player.append(card)
-
-        global player_image
-        player_image = resize_cards(f'./cards/{card}.png')
-
-        player_label.config(image=player_image)
-         
-    except:
-        root.title("Error! No cards to deal")
 
 my_frame = Frame(root, bg="green")
 my_frame.pack(pady=20)
 
 # Dealer and Player frames
 
-dealer_frame = LabelFrame(my_frame, text="Dealer", bd=0)
-dealer_frame.grid(row=0, column=0, padx=20, ipadx=20)
+player1_frame = LabelFrame(my_frame, text="Player 1", bd=0)
+player1_frame.grid(row=0, column=0, padx=20, ipadx=20)
 
-player_frame = LabelFrame(my_frame, text="Player", bd=0)
-player_frame.grid(row=0, column=1, ipadx=20)
+player2_frame = LabelFrame(my_frame, text="Player 2", bd=0)
+player2_frame.grid(row=0, column=1, ipadx=20)
+
+player3_frame = LabelFrame(my_frame, text="Player 3", bd=0) 
+player3_frame.grid(row=0, column=2, padx=20, ipadx=20)
+
+player4_frame = LabelFrame(my_frame, text="Player 4", bd=0)
+player4_frame.grid(row=0, column=3, ipadx=20)
 
 #Put cards in frames
 
-dealer_label = Label(dealer_frame, text="")
-dealer_label.pack(pady=20)
+player1_label = Label(player1_frame, text="")
+player1_label.pack(pady=20)
 
-player_label = Label(player_frame, text="")
-player_label.pack(pady=20)
+player2_label = Label(player2_frame, text="")
+player2_label.pack(pady=20)
+
+player3_label = Label(player3_frame, text="")
+player3_label.pack(pady=20)
+
+player4_label = Label(player4_frame, text="")
+player4_label.pack(pady=20)
 
 # Buttons
 
-shuffle_button = Button(root, text="Shuffle", font=("Helvetica", 32), command=shuffle)
-shuffle_button.pack(pady=20)
-
-deal_button = Button(root, text="Deal", font=("Helvetica", 32), command=deal_cards)
+deal_button = Button(root, text="Deal", font=("Helvetica", 32), command=deal)
 deal_button.pack(pady=20)
 
-shuffle()
+deal()
+
 
 root.mainloop()
