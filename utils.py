@@ -1,4 +1,5 @@
 import random
+from PIL import Image, ImageTk
 
 class Card:
     def __init__(self, suit, rank):
@@ -24,3 +25,15 @@ class Deck:
 
     def __str__(self):
         return ", ".join(str(card) for card in self.cards)
+    
+
+def resize_cards(card):
+    
+    #105 153
+    card_img = Image.open(card)
+    card_img = card_img.resize((75, 109))
+
+    global our_card_image
+    our_card_image = ImageTk.PhotoImage(card_img)
+
+    return our_card_image
