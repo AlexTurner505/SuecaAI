@@ -6,7 +6,7 @@ import math
 import time
 
 # Define global variables
-global deck, player1, player2, player3, player4, player1_images, player2_images, player3_images, player4_images
+global deck, player1, player2, player3, player4, player1_images, player2_images, player3_images, player4_images, starting_player, played_cards, back_card
 
 # Initialize deck and player lists
 deck = Deck()
@@ -14,20 +14,18 @@ player1 = []
 player2 = []
 player3 = []
 player4 = []
-player1_images = []
-player2_images = []
-player3_images = []
-player4_images = []
 player1_labels = []
+played_cards = []
+
+starting_player = 2
+starting_round_player = starting_player
+starting_round_suit = None
 
 # Game Logic
-current_player = 1
 turn = 1
 
 def main_game_loop():
     global current_player, turn
-
-    print(f"Turn:{turn} Player:{current_player}")
 
     if turn <= 4:
         if current_player == 1:
@@ -51,15 +49,21 @@ def start_deck():
     suits = ["diamonds", "hearts", "spades", "clubs"]
     values = list(range(2, 8)) + ["jack", "queen", "king", "ace"]
 
+    global back_card
+    back_card = Card("back", "back", resize_cards(f'./cards/back_card.png'))
+
     for suit in suits:
         for value in values:
-            card = Card(suit, value)
+            card_image = resize_cards(f'./cards/{value}_of_{suit}.png')
+            card = Card(suit, value, card_image)
             deck.add_card(card)
 
 def deal():
-    global player1_labels
+    global player1_labels, current_player, starting_player, back_card
 
     start_deck()
+
+    current_player = starting_player
 
     for label in player1_labels:
         label.destroy()
@@ -71,64 +75,119 @@ def deal():
     player3.clear()
     player4.clear()
 
-    player1_images.clear()
-    player2_images.clear()
-    player3_images.clear()
-    player4_images.clear()
+    players = [player1, player2, player3, player4]
 
-    for i in range(10):
-        card = random.choice(deck.cards)
-        deck.remove_card(card)
-        player1.append(card)
-        player1_images.append(resize_cards(f'./cards/{card.rank}_of_{card.suit}.png'))
-        player1_labels[i].config(image=player1_images[i])
-        player1_labels[i].bind("<Button-1>", lambda event, index=i: card_selected(index))
+    players = players[starting_player-1:] + players[:starting_player-1]
 
-        card = random.choice(deck.cards)
-        deck.remove_card(card)
-        player2.append(card)
-        player2_images.append(resize_cards(f'./cards/{card.rank}_of_{card.suit}.png'))
+    first_card = True
 
-        card = random.choice(deck.cards)
-        deck.remove_card(card)
-        player3.append(card)
-        player3_images.append(resize_cards(f'./cards/{card.rank}_of_{card.suit}.png'))
+    for player in players:
+        for i in range(10):
+            card = random.choice(deck.cards)
+            
+            deck.remove_card(card)
+            player.append(card)
+            if first_card:
+                deck.add_trump(card)
 
-        card = random.choice(deck.cards)
-        deck.remove_card(card)
-        player4.append(card)
-        player4_images.append(resize_cards(f'./cards/{card.rank}_of_{card.suit}.png'))
+                if starting_player == 1:
+                    pass
+                    player2_label.config(image=back_card.image)
+                    player3_label.config(image=back_card.image)
+                    player4_label.config(image=back_card.image)
+                elif starting_player == 2:
+                    player2_label.config(image=card.image)
+                    player3_label.config(image=back_card.image)
+                    player4_label.config(image=back_card.image)
+                elif starting_player == 3:
+                    player2_label.config(image=back_card.image)
+                    player3_label.config(image=card.image)
+                    player4_label.config(image=back_card.image)
+                else:
+                    player2_label.config(image=back_card.image)
+                    player3_label.config(image=back_card.image)
+                    player4_label.config(image=card.image)
 
-def card_selected(index):
-    global current_player, turn
+                first_card = False 
+            if player == player1:
+                player1_labels[i].config(image=card.image)
+                player1_labels[i].bind("<Button-1>", lambda event, index=i, card=card: card_selected(card, index))
+   
+
+def card_selected(card, index):
+    global current_player, turn, played_cards, starting_round_suit, starting_round_player
 
     if current_player == 1 and turn <= 4:
-        player1_card_label.config(image=player1_images[index])
-        # Disable the selected card
+        if starting_round_player == 1:
+            starting_round_suit = card.suit
+        elif starting_round_suit != card.suit:
+            
+            has_starting_round_suit = any(c.suit == starting_round_suit for c in player1)
+
+            print(has_starting_round_suit)
+            
+            if has_starting_round_suit:
+                return
+            else:
+                pass
+
+        player1_card_label.config(image=card.image)
+        played_cards.append(card)
+        player1.remove(card)
         player1_labels[index].destroy()
         current_player = 2
         turn += 1
 
 def card_random():
-    global current_player, turn
+    global current_player, turn, played_cards, starting_round_suit, starting_round_player
 
+    # Define the player's card list based on the current player
     if current_player == 2:
-        card = random.choice(player2)
-        player2_card_label.config(image=player2_images[player2.index(card)])
+        player_cards = player2
+    elif current_player == 3:
+        player_cards = player3
+    elif current_player == 4:
+        player_cards = player4
+
+    if starting_round_player == current_player:
+        valid_cards = player_cards
+
+        card = random.choice(valid_cards)
+
+        starting_round_suit = card.suit
+
+    else:
+
+        # Check if the player has a card of the starting round suit
+        has_starting_round_suit = any(card.suit == starting_round_suit for card in player_cards)
+
+        # If the player has a card of the starting round suit, select randomly from those cards
+        # Otherwise, allow the player to play any card
+        if has_starting_round_suit:
+            valid_cards = [card for card in player_cards if card.suit == starting_round_suit]
+        else:
+            valid_cards = player_cards
+
+        # Select a random card from the valid cards
+        card = random.choice(valid_cards)
+
+    # Update the played card label and other variables accordingly
+    if current_player == 2:
+        player2_card_label.config(image=card.image)
         player2.remove(card)
         current_player = 3
     elif current_player == 3:
-        card = random.choice(player3)
-        player3_card_label.config(image=player3_images[player3.index(card)])
+        player3_card_label.config(image=card.image)
         player3.remove(card)
         current_player = 4
     elif current_player == 4:
-        card = random.choice(player4)
-        player4_card_label.config(image=player4_images[player4.index(card)])
+        player4_card_label.config(image=card.image)
         player4.remove(card)
         current_player = 1
 
+    played_cards.append(card)
     turn += 1
+
 
 root = Tk()
 root.title("Sueca Game")
@@ -165,13 +224,13 @@ def create_player_labels():
         label.grid(row=0, column=i, pady=5, padx=5)
         player1_labels.append(label)
 
-    player2_label = Label(player2_frame, text="Player 2", bg="white", width=13, height=8)
+    player2_label = Label(player2_frame, bg="white")
     player2_label.grid(row=0, column=0)
 
-    player3_label = Label(player3_frame, text="Player 3", bg="white", width=13, height=8)
+    player3_label = Label(player3_frame, bg="white")
     player3_label.grid(row=0, column=0)
 
-    player4_label = Label(player4_frame, text="Player 4", bg="white", width=13, height=8)
+    player4_label = Label(player4_frame, bg="white")
     player4_label.grid(row=0, column=0)
 
 # Card Labels

@@ -2,9 +2,10 @@ import random
 from PIL import Image, ImageTk
 
 class Card:
-    def __init__(self, suit, rank):
+    def __init__(self, suit, rank, image):
         self.suit = suit
         self.rank = rank
+        self.image = image
 
     def __str__(self):
         return f"{self.rank} of {self.suit}"
@@ -16,6 +17,9 @@ class Deck:
 
     def add_card(self, card):
         self.cards.append(card)
+
+    def add_trump(self, card):
+        self.trump = card
 
     def remove_card(self, card):
         self.cards.remove(card)
