@@ -45,6 +45,9 @@ def main_game_loop():
         player4_card_label.config(image='')
         turn = 1
 
+    if (player1 == [] and player2 == [] and player3 == [] and player4 == []):
+        deal()
+
     # Schedule the next iteration of the main loop after a delay
     # You can adjust the delay based on your game's requirements
     root.after(1000, main_game_loop)
@@ -88,9 +91,14 @@ def start_deck():
             deck.add_card(card)
 
 def deal():
-    global player1_labels, current_player, starting_player, back_card
+    global player1_labels, current_player, starting_player, back_card, score1, score2
 
     start_deck()
+
+    score1 = 0
+    score2 = 0
+
+    update_scoreboard_labels()
 
     current_player = starting_player
 
@@ -103,6 +111,8 @@ def deal():
     player2.clear()
     player3.clear()
     player4.clear()
+
+    played_cards.clear()
 
     players = [player1, player2, player3, player4]
 
