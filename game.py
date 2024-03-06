@@ -6,7 +6,7 @@ import math
 import time
 
 # Define global variables
-global deck, player1, player2, player3, player4, player1_images, player2_images, player3_images, player4_images, starting_player, played_cards, back_card
+global deck, player1, player2, player3, player4, player1_images, player2_images, player3_images, player4_images, starting_player, played_cards, back_card, round_cards, score1, score2
 
 # Initialize deck and player lists
 deck = Deck()
@@ -16,6 +16,10 @@ player3 = []
 player4 = []
 player1_labels = []
 played_cards = []
+round_cards = []
+
+score1 = 0
+score2 = 0
 
 starting_player = 2
 starting_round_player = starting_player
@@ -25,7 +29,7 @@ starting_round_suit = None
 turn = 1
 
 def main_game_loop():
-    global current_player, turn
+    global current_player, turn, round_cards
 
     if turn <= 4:
         if current_player == 1:
@@ -33,6 +37,8 @@ def main_game_loop():
         else:
             card_random()
     else:
+        update_scoreboard()
+        round_cards = []
         player1_card_label.config(image='')
         player2_card_label.config(image='')
         player3_card_label.config(image='')
@@ -44,6 +50,29 @@ def main_game_loop():
     root.after(1000, main_game_loop)
 
     # Check for end game conditions and update UI accordingly
+
+def update_scoreboard():
+    global score1, score2
+
+    total_points = sum(tuple_[0].points for tuple_ in round_cards)
+
+
+    if any(card.suit == deck.trump.suit for card, _ in round_cards):
+        max_card = max(round_cards, key=lambda tuple_: tuple_[0].points if tuple_[0].suit == deck.trump.suit else 0)
+    else:
+        max_card = max(round_cards, key=lambda tuple_: tuple_[0].points if tuple_[0].suit == starting_round_suit else 0)
+        
+        
+    if max_card[1] == 1:
+        score1 += total_points
+    else:
+        score2 += total_points
+
+    update_scoreboard_labels()
+
+def update_scoreboard_labels():
+    score1_label.config(text=f"Team 1: {score1}")
+    score2_label.config(text=f"Team 2: {score2}")
 
 def start_deck():
     suits = ["diamonds", "hearts", "spades", "clubs"]
@@ -123,8 +152,6 @@ def card_selected(card, index):
         elif starting_round_suit != card.suit:
             
             has_starting_round_suit = any(c.suit == starting_round_suit for c in player1)
-
-            print(has_starting_round_suit)
             
             if has_starting_round_suit:
                 return
@@ -133,6 +160,7 @@ def card_selected(card, index):
 
         player1_card_label.config(image=card.image)
         played_cards.append(card)
+        round_cards.append((card, 1))
         player1.remove(card)
         player1_labels[index].destroy()
         current_player = 2
@@ -174,14 +202,17 @@ def card_random():
     # Update the played card label and other variables accordingly
     if current_player == 2:
         player2_card_label.config(image=card.image)
+        round_cards.append((card, 2))
         player2.remove(card)
         current_player = 3
     elif current_player == 3:
         player3_card_label.config(image=card.image)
+        round_cards.append((card, 1))
         player3.remove(card)
         current_player = 4
     elif current_player == 4:
         player4_card_label.config(image=card.image)
+        round_cards.append((card, 2))
         player4.remove(card)
         current_player = 1
 
@@ -248,10 +279,10 @@ player4_card_label.place(x=230, y=140)
 
 # Scoreboard Labels
 
-score1_label = Label(scoreboard_frame, text="Team 1: 0", bg="black", fg="white", font=("Arial", 20), padx=10, pady=10)
+score1_label = Label(scoreboard_frame, text=f"Team 1: {score1}", bg="black", fg="white", font=("Arial", 20), padx=10, pady=10)
 score1_label.grid(row=0, column=0)
 
-score2_label = Label(scoreboard_frame, text="Team 2: 0", bg="black", fg="white", font=("Arial", 20), padx=10, pady=10)
+score2_label = Label(scoreboard_frame, text=f"Team 2: {score2}", bg="black", fg="white", font=("Arial", 20), padx=10, pady=10)
 score2_label.grid(row=1, column=0)
 
 

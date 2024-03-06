@@ -7,6 +7,21 @@ class Card:
         self.rank = rank
         self.image = image
 
+        if self.rank == "queen":
+            self.points = 2
+        elif self.rank == "jack":
+            self.points = 3
+        elif self.rank == "king":
+            self.points = 4
+        elif self.rank == 7:
+            self.points = 10
+        elif self.rank == "ace":
+            self.points = 11
+        else:
+            self.points = 0
+        
+        
+
     def __str__(self):
         return f"{self.rank} of {self.suit}"
 
