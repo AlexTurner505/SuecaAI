@@ -21,7 +21,7 @@ round_cards = []
 score1 = 0
 score2 = 0
 
-starting_player = 2
+starting_player = 1
 starting_round_player = starting_player
 starting_round_suit = None
 
@@ -29,13 +29,14 @@ starting_round_suit = None
 turn = 1
 
 def main_game_loop():
-    global current_player, turn, round_cards
+    global current_player, turn, round_cards, starting_player
 
     if turn <= 4:
         if current_player == 1:
             pass
         else:
             card_random()
+            
     else:
         update_scoreboard()
         round_cards = []
@@ -46,11 +47,12 @@ def main_game_loop():
         turn = 1
 
     if (player1 == [] and player2 == [] and player3 == [] and player4 == []):
+        starting_player = (starting_player % 4) + 1
         deal()
 
     # Schedule the next iteration of the main loop after a delay
     # You can adjust the delay based on your game's requirements
-    root.after(1000, main_game_loop)
+    root.after(500, main_game_loop)
 
     # Check for end game conditions and update UI accordingly
 
@@ -64,9 +66,10 @@ def update_scoreboard():
         max_card = max(round_cards, key=lambda tuple_: tuple_[0].points if tuple_[0].suit == deck.trump.suit else 0)
     else:
         max_card = max(round_cards, key=lambda tuple_: tuple_[0].points if tuple_[0].suit == starting_round_suit else 0)
+
+    winning_team = max_card[1]    
         
-        
-    if max_card[1] == 1:
+    if winning_team == 1:
         score1 += total_points
     else:
         score2 += total_points
@@ -91,16 +94,19 @@ def start_deck():
             deck.add_card(card)
 
 def deal():
-    global player1_labels, current_player, starting_player, back_card, score1, score2
+    global player1_labels, current_player, starting_player, back_card, score1, score2, starting_round_player, turn, starting_round_suit, round_cards
 
     start_deck()
 
     score1 = 0
     score2 = 0
+    starting_round_suit = None
+    turn = 1
 
     update_scoreboard_labels()
 
     current_player = starting_player
+    starting_round_player = starting_player
 
     for label in player1_labels:
         label.destroy()
@@ -111,6 +117,8 @@ def deal():
     player2.clear()
     player3.clear()
     player4.clear()
+
+    round_cards = []
 
     played_cards.clear()
 
@@ -131,21 +139,25 @@ def deal():
 
                 if starting_player == 1:
                     pass
-                    player2_label.config(image=back_card.image)
-                    player3_label.config(image=back_card.image)
-                    player4_label.config(image=back_card.image)
+                    player1_trump_label.config(image=card.image)
+                    player2_trump_label.config(image=back_card.image)
+                    player3_trump_label.config(image=back_card.image)
+                    player4_trump_label.config(image=back_card.image)
                 elif starting_player == 2:
-                    player2_label.config(image=card.image)
-                    player3_label.config(image=back_card.image)
-                    player4_label.config(image=back_card.image)
+                    player1_trump_label.config(image=back_card.image)
+                    player2_trump_label.config(image=card.image)
+                    player3_trump_label.config(image=back_card.image)
+                    player4_trump_label.config(image=back_card.image)
                 elif starting_player == 3:
-                    player2_label.config(image=back_card.image)
-                    player3_label.config(image=card.image)
-                    player4_label.config(image=back_card.image)
+                    player1_trump_label.config(image=back_card.image)
+                    player2_trump_label.config(image=back_card.image)
+                    player3_trump_label.config(image=card.image)
+                    player4_trump_label.config(image=back_card.image)
                 else:
-                    player2_label.config(image=back_card.image)
-                    player3_label.config(image=back_card.image)
-                    player4_label.config(image=card.image)
+                    player1_trump_label.config(image=back_card.image)
+                    player2_trump_label.config(image=back_card.image)
+                    player3_trump_label.config(image=back_card.image)
+                    player4_trump_label.config(image=card.image)
 
                 first_card = False 
             if player == player1:
@@ -239,6 +251,9 @@ root.configure(bg="green")
 player1_frame = LabelFrame(root, bg="brown")
 player1_frame.pack(side=BOTTOM, padx=10, pady=20)
 
+player1_trump_frame = LabelFrame(root, bd=0, bg="white")
+player1_trump_frame.place(x=100, y=650)
+
 player2_frame = LabelFrame(root, bd=0, bg="white")
 player2_frame.place(x=1400, y=100)
 
@@ -256,7 +271,7 @@ scoreboard_frame.place(x=1300, y=670, height=200, width=300)
 
 # Put cards in frames
 def create_player_labels():
-    global player1_labels, player2_label, player3_label, player4_label
+    global player1_labels, player2_trump_label, player3_trump_label, player4_trump_label, player1_trump_label
 
     player1_labels = []
 
@@ -265,14 +280,17 @@ def create_player_labels():
         label.grid(row=0, column=i, pady=5, padx=5)
         player1_labels.append(label)
 
-    player2_label = Label(player2_frame, bg="white")
-    player2_label.grid(row=0, column=0)
+    player1_trump_label = Label(player1_trump_frame, bg="white")
+    player1_trump_label.grid(row=0, column=0)
 
-    player3_label = Label(player3_frame, bg="white")
-    player3_label.grid(row=0, column=0)
+    player2_trump_label = Label(player2_frame, bg="white")
+    player2_trump_label.grid(row=0, column=0)
 
-    player4_label = Label(player4_frame, bg="white")
-    player4_label.grid(row=0, column=0)
+    player3_trump_label = Label(player3_frame, bg="white")
+    player3_trump_label.grid(row=0, column=0)
+
+    player4_trump_label = Label(player4_frame, bg="white")
+    player4_trump_label.grid(row=0, column=0)
 
 # Card Labels
 player1_card_label = Label(tabel_frame, bg="brown")
