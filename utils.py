@@ -2,7 +2,8 @@ import random
 from PIL import Image, ImageTk
 
 class Card:
-    def __init__(self, suit, rank, image):
+    
+    def __init__(self, suit, rank, image=None):
         self.suit = suit
         self.rank = rank
         self.image = image

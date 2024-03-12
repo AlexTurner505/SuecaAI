@@ -31,6 +31,11 @@ turn = 1
 def main_game_loop():
     global current_player, turn, round_cards, starting_player
 
+    if (player1 == [] and player2 == [] and player3 == [] and player4 == []):
+        update_scoreboard()
+        starting_player = (starting_player % 4) + 1
+        deal()
+
     if turn <= 4:
         if current_player == 1:
             pass
@@ -45,10 +50,6 @@ def main_game_loop():
         player3_card_label.config(image='')
         player4_card_label.config(image='')
         turn = 1
-
-    if (player1 == [] and player2 == [] and player3 == [] and player4 == []):
-        starting_player = (starting_player % 4) + 1
-        deal()
 
     # Schedule the next iteration of the main loop after a delay
     # You can adjust the delay based on your game's requirements
